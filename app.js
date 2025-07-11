@@ -7,6 +7,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api', require('./routes/Auth'))
 app.use('/api', require('./routes/Staff'))
+app.use('/api', require('./routes/Employees'))
 
 app.get('/', (req, res) => {
     return res.send(`Alive!!`)

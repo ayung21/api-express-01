@@ -11,11 +11,11 @@ router.post('/auth/register', async (req, res) => {
     try {
         const bcrypt = require('bcrypt');
         const saltRounds = 10;
-        const { user, password } = req.body;
+        const { username , password } = req.body;
 
         const checkUser = await models.users.findOne({
             where: {
-                user: user
+                username: username
             }
         });
 
@@ -29,7 +29,7 @@ router.post('/auth/register', async (req, res) => {
         const hash = await bcrypt.hash(password, saltRounds);
 
         const newUser = await models.users.create({
-            user: user,
+            username: username,
             password: hash,
             created_at: new Date()
         });
@@ -52,9 +52,9 @@ router.post('/auth/register', async (req, res) => {
 router.post('/auth/login', async (req, res) => {
     try {
         const bcrypt = require('bcrypt');
-        const { user, password } = req.body;
+        const { username, password } = req.body;
 
-        if (!user || !password) {
+        if (!username || !password) {
             return res.json({
                 status: 400,
                 message: 'Username and password are required'
@@ -63,7 +63,7 @@ router.post('/auth/login', async (req, res) => {
 
         const member = await models.users.findOne({
             where: {
-                user: user
+                username: username
             }
         });
 
@@ -84,14 +84,18 @@ router.post('/auth/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: member.id, user: member.user },
+            { id: member.id, username: member.username },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
         const logLogin = await models.log.create({
             user_id: member.id,
-            date_login: new Date()
+            date_login: new Date(),
+            ip_login: req.headers['x-forwarded-for'] || req.ip, // Get the IP address
+            device_info: req.headers['user-agent'], // Get the device info from user agent
+            status_login: 'success',
+            description_log: 'User logged in successfully'
         });
 
         return res.json({

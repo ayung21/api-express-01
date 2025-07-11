@@ -2,32 +2,39 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('users', {
     id: {
+      autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
+      primaryKey: true
     },
-    user: {
-      type: DataTypes.STRING,
+    username: {
+      type: DataTypes.STRING(255),
       allowNull: false
     },
     password: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(255),
       allowNull: false
     },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.NOW
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+      field: 'created_at' // <-- map to DB column
+    },
+    updated_by: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     }
   }, {
     sequelize,
     tableName: 'users',
     schema: 'public',
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'created_at', // <-- tell Sequelize to use created_at
+    updatedAt: false,        // <-- or set to 'updated_at' if you have it
     indexes: [
       {
-        name: "users_unique",
+        name: "users_pkey",
         unique: true,
         fields: [
           { name: "id" },
